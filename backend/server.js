@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -8,55 +9,54 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/analyze", async (req, res) => {
+
   try {
+
     const transcript = req.body.transcript;
 
+    if (!transcript) {
+
+      return res.status(400).json({
+        error: "Transcript is required"
+      });
+    }
+
     const prompt = `
-You are an expert DeepThought psychology assessment assistant.
+You are an expert DeepThought evaluator.
 
-Your task is to analyze supervisor feedback transcripts for DT Fellows.
+Analyze the supervisor feedback transcript carefully.
 
-IMPORTANT RUBRIC RULES:
+Return analysis in this exact format:
 
-1-3:
-Poor discipline, low ownership, disengaged.
+Score: <number>
 
-4:
-Inconsistent execution.
-
-5:
-Reliable task execution.
-Completes assigned work consistently.
-
-6:
-Highly reliable and productive.
-Can independently execute assigned tasks with trust.
-
-7:
-ONLY if Fellow independently identifies problems or expands scope beyond assigned work.
-
-8+:
-Strong systems building, innovation, process creation, experimentation.
-
-CRITICAL:
-- Being sincere, hardworking, or always present DOES NOT automatically mean high score.
-- Updating trackers and following up are execution behaviors unless the Fellow CREATED the system.
-- Waiting for instructions limits score to maximum 6.
-- Distinguish:
-  - task execution
-  - systems building
-
-Return STRICTLY in this format:
-
-Score:
-
-Label:
+Label: <short label>
 
 Justification:
+<short explanation>
 
 Evidence:
 - quote -> interpretation
 - quote -> interpretation
+
+IMPORTANT KPI RULES:
+
+You MUST use ONLY these KPI names:
+- Lead Generation
+- Lead Conversion
+- Upselling
+- Cross-selling
+- NPS
+- PAT
+- TAT
+- Quality
+
+DO NOT invent new KPI names.
+
+If transcript does not map clearly, use:
+- Quality
+or
+- TAT
 
 KPI Mapping:
 - KPI -> reason
@@ -70,6 +70,34 @@ Follow-up Questions:
 - question
 - question
 
+IMPORTANT RULES:
+
+1-3:
+Poor discipline, disengaged, unreliable.
+
+4:
+Inconsistent execution.
+
+5:
+Reliable task execution.
+Completes assigned work consistently.
+
+6:
+Highly reliable and dependable execution.
+Can execute assigned work independently with trust.
+
+7:
+Requires independent problem identification or expanding scope beyond assigned work.
+
+8+:
+Requires systems building, innovation, experimentation, or process creation.
+
+IMPORTANT:
+- Reliability alone cannot exceed 6
+- Presence alone cannot exceed 6
+- Sincerity alone cannot exceed 6
+- Distinguish task execution vs systems building
+
 Transcript:
 ${transcript}
 `;
@@ -79,19 +107,20 @@ ${transcript}
       {
         model: "llama3.2",
         prompt: prompt,
-        stream: false,
+        stream: false
       }
     );
 
     res.json({
-      result: response.data.response,
+      result: response.data.response
     });
 
   } catch (error) {
+
     console.log(error);
 
     res.status(500).json({
-      error: "Something went wrong",
+      error: "Something went wrong"
     });
   }
 });
